@@ -389,13 +389,23 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     private const MAX_CITIES = 4;
     private const MAX_ROADS = 15;
 
+    private const PRICE_ORE_FOR_CITY = 3;
+    private const PRICE_GRAIN_FOR_CITY = 2;
+
+    private const PRICE_BRICK_FOR_ROAD = 1;
+    private const PRICE_LUMBER_FOR_ROAD = 1;
+
+    private const PRICE_BRICK_FOR_SETTLEMENT = 1;
+    private const PRICE_LUMBER_FOR_SETTLEMENT = 1;
+    private const PRICE_WOOL_FOR_SETTLEMENT = 1;
+    private const PRICE_GRAIN_FOR_SETTLEMENT = 1;
+
 
     public function availableBuildingsForUser(): array{
 
 
         $placedSettlements = 0;
         $placedCities = 0;
-        //$placedRoads = 0;
 
         foreach($this->getNodes() as $node) {
 
@@ -440,13 +450,21 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
 
     }
 
-    public function canPlaceSettlement(Node $node){
+    //@ToDo Check if there is a connection with at least one road (this road can also be placed that same turn)
+    //@ToDo check if all 3 of the adjacent intersections are vacant
+    public function canPlaceSettlement(Node $node) :bool
+    {
 
 
         $availableBuildings = $this->availableBuildingsForUser();
 
 
-        if($availableBuildings['available_settlements']<=0){
+        if($availableBuildings['available_settlements']<= 0){
+            return false;
+        }
+
+        if($this->brick < self::PRICE_BRICK_FOR_SETTLEMENT ||$this->lumber < self::PRICE_LUMBER_FOR_SETTLEMENT
+            ||$this->wool < self::PRICE_WOOL_FOR_SETTLEMENT ||$this->grain < self::PRICE_GRAIN_FOR_SETTLEMENT){
             return false;
         }
 
@@ -457,12 +475,17 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
             return true;
     }
 
-    public function canPlaceCity(Node $node)
+    public function canPlaceCity(Node $node): bool
     {
+
 
         $availableBuildings = $this->availableBuildingsForUser();
 
         if($availableBuildings['available_cities']<=0){
+            return false;
+        }
+
+        if($this->ore < self::PRICE_ORE_FOR_CITY || $this->grain < self::PRICE_GRAIN_FOR_CITY ){
             return false;
         }
 
@@ -477,10 +500,15 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     //@ToDO check inside this function if the space is still available based on the nodes.
-    public function canPlaceRoad()
+    // @ToDo check if the new road is connected to a city, settlement or different road.
+    public function canPlaceRoad(): bool
     {
 
         if($this->availableRoadsForUser()<=0){
+            return false;
+        }
+
+        if($this->brick < self::PRICE_BRICK_FOR_ROAD || $this->lumber < self::PRICE_LUMBER_FOR_ROAD){
             return false;
         }
 
@@ -488,6 +516,8 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
 
 
     }
+
+
 
 
 
