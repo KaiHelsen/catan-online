@@ -97,6 +97,7 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private $cards;
 
+
     public function __construct()
     {
         $this->nodes = new ArrayCollection();
@@ -383,5 +384,112 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+    private const MAX_SETTLEMENTS = 5;
+    private const MAX_CITIES = 4;
+    private const MAX_ROADS = 15;
+
+
+    public function availableBuildingsForUser(): array{
+
+
+        $placedSettlements = 0;
+        $placedCities = 0;
+        //$placedRoads = 0;
+
+        foreach($this->getNodes() as $node) {
+
+            if($node->getPlayer() === $this && $node->getIsCity() === false){
+
+                $placedSettlements ++ ;
+
+            }
+
+            if($node->getPlayer() === $this && $node->getIsCity() === true){
+
+                $placedCities ++;
+
+            }
+        }
+
+        $availableSettlements =  self::MAX_SETTLEMENTS - $placedSettlements ;
+        $availableCities = self::MAX_CITIES - $placedCities ;
+
+        return array('available_settlements' => $availableSettlements, 'available_cities' => $availableCities);
+
+        }
+
+    public function availableRoadsForUser(): int
+    {
+
+        $placedRoads = 0;
+
+        foreach($this->roads as $road){
+
+            if($road->getIsPlaced() === false){
+
+                $placedRoads ++;
+
+            }
+
+        }
+
+        $availableRoads = self::MAX_ROADS - $placedRoads;
+
+        return $availableRoads;
+
+    }
+
+    public function canPlaceSettlement(Node $node){
+
+
+        $availableBuildings = $this->availableBuildingsForUser();
+
+
+        if($availableBuildings['available_settlements']<=0){
+            return false;
+        }
+
+        if($node->getIsPlaced() === true){
+            return false;
+        }
+
+            return true;
+    }
+
+    public function canPlaceCity(Node $node)
+    {
+
+        $availableBuildings = $this->availableBuildingsForUser();
+
+        if($availableBuildings['available_cities']<=0){
+            return false;
+        }
+
+        if($node->getPlayer() !== $this){
+            return false;
+        }
+        if(!$node->getIsPlaced() || $node->getIsCity() === true){
+            return false;
+        }
+
+            return true;
+    }
+
+    //@ToDO check inside this function if the space is still available based on the nodes.
+    public function canPlaceRoad()
+    {
+
+        if($this->availableRoadsForUser()<=0){
+            return false;
+        }
+
+        return true;
+
+
+    }
+
+
+
 
 }
