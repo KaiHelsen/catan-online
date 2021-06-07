@@ -400,6 +400,9 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     private const PRICE_WOOL_FOR_SETTLEMENT = 1;
     private const PRICE_GRAIN_FOR_SETTLEMENT = 1;
 
+    private const PRICE_WOOL_FOR_CARD = 1;
+    private const PRICE_GRAIN_FOR_CARD = 1;
+    private const PRICE_ORE_FOR_CARD = 1;
 
     public function availableBuildingsForUser(): array{
 
@@ -465,6 +468,7 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
 
         if($this->brick < self::PRICE_BRICK_FOR_SETTLEMENT ||$this->lumber < self::PRICE_LUMBER_FOR_SETTLEMENT
             ||$this->wool < self::PRICE_WOOL_FOR_SETTLEMENT ||$this->grain < self::PRICE_GRAIN_FOR_SETTLEMENT){
+
             return false;
         }
 
@@ -514,6 +518,31 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
 
         return true;
 
+
+    }
+
+    public function canBuyCard(Lobby $lobby): bool
+    {
+
+        if($this->ore < self::PRICE_ORE_FOR_CARD || $this->wool < self::PRICE_WOOL_FOR_CARD || $this->grain < self::PRICE_GRAIN_FOR_CARD){
+            return false;
+        }
+
+        $availableLobbyCards = 0;
+
+        foreach ($lobby->getCards() as $card){
+
+            if($card->getHeldBy() === null){
+
+                $availableLobbyCards ++;
+            }
+        }
+
+        if($availableLobbyCards === 0){
+            return false;
+        }
+
+        return true;
 
     }
 
